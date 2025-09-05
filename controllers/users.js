@@ -28,7 +28,9 @@ const signUp = (req, res, next) => {
     })
     .catch((err) => {
       if (err.code === 11000) {
-        return next(new ConflictError("Email already in use"));
+        err.message = "Email already in use";
+        err.statusCode = 409;
+        return next(err);
       }
       return next(err);
     });

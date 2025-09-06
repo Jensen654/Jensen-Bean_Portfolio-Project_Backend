@@ -1,7 +1,11 @@
 const User = require("../models/users.js");
 const jwt = require("jsonwebtoken");
 const { JWT_SECRET } = require("../utils/config.js");
+const bcrypt = require("bcrypt");
 const UnauthorizedError = require("../errors/UnauthorizedError.js");
+const NotFoundError = require("../errors/NotFoundError.js");
+const ConflictError = require("../errors/ConflictError.js");
+const BadRequestError = require("../errors/BadRequestError.js");
 
 const login = (req, res, next) => {
   const { email, password } = req.body;
@@ -12,31 +16,63 @@ const login = (req, res, next) => {
     })
     .catch((err) => {
       if (err.message === "Incorrect Email or Password") {
-        return next(new UnauthorizedError("Incorrect Email or Password"));
+        return next(new BadRequestError("Incorrect Email or Password"));
       }
       return next(err);
     });
 };
 
-const signUp = (req, res, next) => {
-  const { name, email, password } = req.body;
+const signUp = async (req, res, next) => {
+  const { name, avatar, email, password } = req.body;
 
-  User.create({ name, email, password })
+  try {
+    const hashedPassword = await bcrypt.hash(password, 4);
+    User.create({ name, avatar, email, password: hashedPassword })
+      .then((user) => {
+        res.status(201).send({
+          _id: user._id,
+          name: user.name,
+          avatar: user.avatar,
+          email: user.email,
+        });
+      })
+      .catch((err) => {
+        if (err.name === "ValidationError") {
+          next(
+            new BadRequestError(
+              `The provided info does not conform to database standards/requirements.`
+            )
+          );
+        } else if (err.code === 11000) {
+          next(new ConflictError("Email has already been used."));
+        } else {
+          next(err);
+        }
+      });
+  } catch (err) {
+    next(err);
+  }
+};
+
+const getCurrentUser = (req, res, next) => {
+  const userId = req.user.id;
+
+  User.findById(userId)
+    .orFail()
     .then((user) => {
-      const token = jwt.sign({ id: user._id }, JWT_SECRET, { expiresIn: "7d" });
-      return res.status(201).send({ token });
+      res.send(user);
     })
     .catch((err) => {
-      if (err.code === 11000) {
-        err.message = "Email already in use";
-        err.statusCode = 409;
+      if (err.name === "DocumentNotFoundError") {
+        return next(new NotFoundError("User not found"));
+      } else {
         return next(err);
       }
-      return next(err);
     });
 };
 
 module.exports = {
   login,
   signUp,
+  getCurrentUser,
 };

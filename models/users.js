@@ -23,11 +23,30 @@ const userSchema = new mongoose.Schema({
     required: true,
     minLength: 2,
   },
+  profession: {
+    type: String,
+    default: "A Silly Billy",
+    minLength: 2,
+    maxLength: 100,
+  },
+  resumeUrl: {
+    type: String,
+    default: "",
+    validate: {
+      validator: (value) => !value || validator.isURL(value),
+      message: "You must provide a valid URL",
+    },
+  },
+  about: {
+    type: String,
+    // required: true,
+    maxLength: 3000,
+    default: "This user prefers to keep an air of mystery about them.",
+  },
   avatar: {
     type: String,
     default:
       "https://img.freepik.com/premium-vector/vector-flat-illustration-grayscale-avatar-user-profile-person-icon-profile-picture-business-profile-woman-suitable-social-media-profiles-icons-screensavers-as-templatex9_719432-1351.jpg?semt=ais_hybrid&w=740&q=80",
-    required: true,
   },
 });
 
@@ -38,6 +57,8 @@ userSchema.statics.findUserByCredentials = function findUserByCredentials(
   return this.findOne({ email })
     .select("+password")
     .then((user) => {
+      // console.log(`User: ${user}`);
+
       if (!user) {
         return Promise.reject(new Error("Incorrect Email or Password"));
       }

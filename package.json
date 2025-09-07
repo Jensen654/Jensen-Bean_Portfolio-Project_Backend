@@ -20,6 +20,7 @@
   },
   "homepage": "https://github.com/Jensen654/Jensen-Bean_Portfolio-Project_Backend#readme",
   "dependencies": {
+    "aws-sdk": "^2.1692.0",
     "bcrypt": "^6.0.0",
     "cors": "^2.8.5",
     "express": "^5.1.0",

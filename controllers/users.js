@@ -6,6 +6,29 @@ const UnauthorizedError = require("../errors/UnauthorizedError.js");
 const NotFoundError = require("../errors/NotFoundError.js");
 const ConflictError = require("../errors/ConflictError.js");
 const BadRequestError = require("../errors/BadRequestError.js");
+const AWS = require("aws-sdk");
+
+const s3 = new AWS.S3();
+
+const generateUploadUrl = (date) => {
+  const params = {
+    Bucket: "myimagedatabasejensenbean",
+    Key: `uploads/${Date.now()}.jpg`,
+    Expires: 60,
+    ContentType: "image/jpeg",
+    ACL: "public-read",
+  };
+
+  return s3.getSignedUrlPromise("putObject", params);
+};
+
+const sendUploadUrl = async (req, res, next) => {
+  try {
+    const uploadUrl = await generateUploadUrl();
+  } catch (err) {
+    next(err);
+  }
+};
 
 const login = (req, res, next) => {
   const { email, password } = req.body;
@@ -75,4 +98,5 @@ module.exports = {
   login,
   signUp,
   getCurrentUser,
+  generateUploadUrl,
 };

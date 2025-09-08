@@ -13,7 +13,7 @@ const s3 = new AWS.S3();
 const generateUploadUrl = (date) => {
   const params = {
     Bucket: "myimagedatabasejensenbean",
-    Key: `uploads/${Date.now()}.jpg`,
+    Key: `uploads/${date}.jpg`,
     Expires: 60,
     ContentType: "image/jpeg",
     ACL: "public-read",
@@ -23,8 +23,10 @@ const generateUploadUrl = (date) => {
 };
 
 const sendUploadUrl = async (req, res, next) => {
+  const date = Date.now();
   try {
-    const uploadUrl = await generateUploadUrl();
+    const uploadUrl = await generateUploadUrl(date);
+    res.status(200).send({ uploadUrl, date });
   } catch (err) {
     next(err);
   }
@@ -98,5 +100,5 @@ module.exports = {
   login,
   signUp,
   getCurrentUser,
-  generateUploadUrl,
+  sendUploadUrl,
 };

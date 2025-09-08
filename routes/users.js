@@ -1,10 +1,7 @@
 const router = require("express").Router();
-const {
-  getCurrentUser,
-  generateUploadUrl,
-} = require("../controllers/users.js");
+const { getCurrentUser, sendUploadUrl } = require("../controllers/users.js");
 
 router.get("/confirm", getCurrentUser);
-router.get("/upload-url", generateUploadUrl);
+router.get("/upload-url", sendUploadUrl);
 
 module.exports = router;

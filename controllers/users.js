@@ -6,27 +6,33 @@ const UnauthorizedError = require("../errors/UnauthorizedError.js");
 const NotFoundError = require("../errors/NotFoundError.js");
 const ConflictError = require("../errors/ConflictError.js");
 const BadRequestError = require("../errors/BadRequestError.js");
-const AWS = require("aws-sdk");
+const { S3Client, PutObjectCommand } = require("@aws-sdk/client-s3");
+const { getSignedUrl } = require("@aws-sdk/s3-request-presigner");
 
-const s3 = new AWS.S3();
+const s3 = new S3Client({
+  // region: "us-east-2",
+  // credentials: {
+  //   accessKeyId: "AKIA5TIACKHIJHDDD3PP",
+  //   secretAccessKey: "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",
+  // },
+});
 
-const generateUploadUrl = (date) => {
-  const params = {
+const generateUploadUrl = async (date) => {
+  const command = new PutObjectCommand({
     Bucket: "myimagedatabasejensenbean",
     Key: `uploads/${date}.jpg`,
-    Expires: 60,
     ContentType: "image/jpeg",
     ACL: "public-read",
-  };
-
-  return s3.getSignedUrlPromise("putObject", params);
+  });
+  return await getSignedUrl(s3, command, { expiresIn: 60 });
 };
 
 const sendUploadUrl = async (req, res, next) => {
   const date = Date.now();
+  const key = `uploads/${date}.jpg`;
   try {
     const uploadUrl = await generateUploadUrl(date);
-    res.status(200).send({ uploadUrl, date });
+    res.status(200).send({ uploadUrl, key });
   } catch (err) {
     next(err);
   }
@@ -96,9 +102,38 @@ const getCurrentUser = (req, res, next) => {
     });
 };
 
+const updateUserInfo = (req, res, next) => {
+  const userId = req.user.id;
+  const { name, avatar, profession, resumeUrl, about } = req.body;
+
+  User.findByIdAndUpdate(
+    userId,
+    { name, avatar, profession, resumeUrl, about },
+    { new: true, runValidators: true }
+  )
+    .orFail()
+    .then((newDoc) => {
+      res.send({ newDoc });
+    })
+    .catch((err) => {
+      if (err.name === "ValidationError") {
+        next(
+          new BadRequestError(
+            `The provided info does not conform to database standards/requirements.`
+          )
+        );
+      } else if (err.name === "DocumentNotFoundError") {
+        next(new NotFoundError(`User does not exist.`));
+      } else {
+        next(err);
+      }
+    });
+};
+
 module.exports = {
   login,
   signUp,
   getCurrentUser,
   sendUploadUrl,
+  updateUserInfo,
 };

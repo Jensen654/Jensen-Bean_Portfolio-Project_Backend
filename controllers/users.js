@@ -6,15 +6,19 @@ const UnauthorizedError = require("../errors/UnauthorizedError.js");
 const NotFoundError = require("../errors/NotFoundError.js");
 const ConflictError = require("../errors/ConflictError.js");
 const BadRequestError = require("../errors/BadRequestError.js");
-const { S3Client, PutObjectCommand } = require("@aws-sdk/client-s3");
+const {
+  S3Client,
+  PutObjectCommand,
+  DeleteObjectCommand,
+} = require("@aws-sdk/client-s3");
 const { getSignedUrl } = require("@aws-sdk/s3-request-presigner");
 
 const s3 = new S3Client({
-  // region: "us-east-2",
-  // credentials: {
-  //   accessKeyId: "AKIA5TIACKHIJHDDD3PP",
-  //   secretAccessKey: "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",
-  // },
+  region: "us-east-2",
+  credentials: {
+    accessKeyId: "AKIA5TIACKHIJHDDD3PP",
+    secretAccessKey: "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",
+  },
 });
 
 const generateUploadUrl = async (date) => {
@@ -22,7 +26,18 @@ const generateUploadUrl = async (date) => {
     Bucket: "myimagedatabasejensenbean",
     Key: `uploads/${date}.jpg`,
     ContentType: "image/jpeg",
-    ACL: "public-read",
+  });
+  return await getSignedUrl(s3, command, { expiresIn: 60 });
+};
+
+const generateDeleteUrl = async (url) => {
+  const key = url.replace(
+    "https://myimagedatabasejensenbean.s3.us-east-2.amazonaws.com/",
+    ""
+  );
+  const command = new DeleteObjectCommand({
+    Bucket: "myimagedatabasejensenbean",
+    Key: key,
   });
   return await getSignedUrl(s3, command, { expiresIn: 60 });
 };
@@ -38,12 +53,28 @@ const sendUploadUrl = async (req, res, next) => {
   }
 };
 
+const sendDeleteUrl = async (req, res, next) => {
+  // console.log("item Url: ", req.params);
+  const itemUrl = req.params.url;
+
+  try {
+    const deleteUrl = await generateDeleteUrl(itemUrl);
+    // console.log(deleteUrl);
+
+    res.status(200).send({ deleteUrl });
+  } catch (err) {
+    // console.log(err);
+
+    next(err);
+  }
+};
+
 const login = (req, res, next) => {
   const { email, password } = req.body;
   User.findUserByCredentials(email, password)
     .then((user) => {
       const token = jwt.sign({ id: user._id }, JWT_SECRET, { expiresIn: "7d" });
-      return res.send({ token });
+      return res.send({ token, user });
     })
     .catch((err) => {
       if (err.message === "Incorrect Email or Password") {
@@ -60,12 +91,19 @@ const signUp = async (req, res, next) => {
     const hashedPassword = await bcrypt.hash(password, 4);
     User.create({ name, avatar, email, password: hashedPassword })
       .then((user) => {
-        res.status(201).send({
+        const token = jwt.sign({ id: user._id }, JWT_SECRET, {
+          expiresIn: "7d",
+        });
+        const userData = {
           _id: user._id,
           name: user.name,
           avatar: user.avatar,
           email: user.email,
-        });
+          about: user.about,
+          profession: user.profession,
+          resumeUrl: user.resumeUrl,
+        };
+        res.status(201).send({ userData, token });
       })
       .catch((err) => {
         if (err.name === "ValidationError") {
@@ -136,4 +174,5 @@ module.exports = {
   getCurrentUser,
   sendUploadUrl,
   updateUserInfo,
+  sendDeleteUrl,
 };

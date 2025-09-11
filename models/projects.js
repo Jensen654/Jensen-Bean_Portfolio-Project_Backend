@@ -12,12 +12,6 @@ const projectSchema = new mongoose.Schema({
     type: String,
     required: true,
     minLength: 2,
-    maxLength: 10,
-  },
-  title: {
-    type: String,
-    required: true,
-    minLength: 2,
     maxLength: 100,
   },
   description: {
@@ -28,28 +22,38 @@ const projectSchema = new mongoose.Schema({
   },
   url: {
     type: String,
-    required: true,
+    // required: true,
     validate: {
-      validator: (value) => validator.isURL(value),
+      validator: (value) => {
+        if (value) {
+          validator.isURL(value);
+        }
+        return;
+      },
       message: "You must provide a valid URL",
     },
   },
   videoUrl: {
     type: String,
-    required: true,
+    // required: true,
     validate: {
-      validator: (value) => validator.isURL(value),
+      validator: (value) => {
+        if (value) {
+          validator.isURL(value);
+        }
+        return;
+      },
       message: "You must provide a valid video URL",
     },
   },
   image: {
     type: String,
-    required: true,
+    // required: true,
   },
   owner: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "user",
-    required: true,
+    // required: true,
   },
 });
 

@@ -7,8 +7,14 @@ const getProjects = (req, res, next) => {
 };
 
 const addNewProject = (req, res, next) => {
-  Project.create(req.body)
-    .then((project) => res.status(201).send(project))
+  const { type, title, description, url, videoUrl, image, owner } = req.body;
+  Project.create({ type, title, description, url, videoUrl, image, owner })
+    .then((project) => {
+      console.log(project);
+
+      res.status(201).send({ project });
+    })
+
     .catch(next);
 };
 

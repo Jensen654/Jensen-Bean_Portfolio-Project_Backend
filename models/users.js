@@ -22,6 +22,7 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: true,
     minLength: 2,
+    select: false,
   },
   profession: {
     type: String,
@@ -47,6 +48,10 @@ const userSchema = new mongoose.Schema({
     type: String,
     default:
       "https://img.freepik.com/premium-vector/vector-flat-illustration-grayscale-avatar-user-profile-person-icon-profile-picture-business-profile-woman-suitable-social-media-profiles-icons-screensavers-as-templatex9_719432-1351.jpg?semt=ais_hybrid&w=740&q=80",
+    validate: {
+      validator: (value) => validator.isURL(value),
+      message: "You must provide a valid URL",
+    },
   },
 });
 

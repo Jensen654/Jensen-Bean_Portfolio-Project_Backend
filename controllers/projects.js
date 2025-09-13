@@ -18,7 +18,17 @@ const addNewProject = (req, res, next) => {
     .catch(next);
 };
 
+const deleteProject = (req, res, next) => {
+  const { projectId } = req.body;
+  Project.findByIdAndDelete(projectId)
+    .orFail()
+    .then(() =>
+      res.status(200).send({ message: "Project Successfully Deleted" })
+    );
+};
+
 module.exports = {
   getProjects,
   addNewProject,
+  deleteProject,
 };

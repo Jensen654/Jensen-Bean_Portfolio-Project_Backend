@@ -5,8 +5,6 @@ const projectSchema = new mongoose.Schema({
   type: {
     type: String,
     required: true,
-    minLength: 2,
-    maxLength: 10,
   },
   title: {
     type: String,
@@ -53,14 +51,19 @@ const projectSchema = new mongoose.Schema({
   owner: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "user",
-    // required: true,
+    required: true,
   },
 });
 
 projectSchema.statics.findOwnersProjects = function findOwnersProjects({
-  userId,
+  ownerId,
 }) {
-  return this.find({ owner: userId }).then((projects) => {
+  // const things = this.find({ owner: ownerId });
+  // console.log(ownerId);
+
+  return this.find({ owner: ownerId }).then((projects) => {
+    console.log(projects);
+
     if (!projects) {
       return Promise.reject(new Error("No Projects"));
     }

@@ -19,6 +19,8 @@ const authMiddleware = (req, res, next) => {
     return next(new UnauthorizedError("No json web token found"));
   }
 
+  // console.log(payload);
+
   req.user = payload;
   return next();
 };

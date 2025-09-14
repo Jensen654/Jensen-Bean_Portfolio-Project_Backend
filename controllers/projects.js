@@ -1,9 +1,19 @@
 const Project = require("../models/projects");
+const NotFoundError = require("../errors/NotFoundError");
 
 const getProjects = (req, res, next) => {
-  Project.find()
-    .then((projects) => res.json(projects))
-    .catch((err) => res.status(500).json({ error: err.message }));
+  const ownerId = req.user.id;
+  Project.findOwnersProjects({ owner: ownerId })
+    .then((projects) => {
+      res.status(200).send(projects);
+    })
+    .catch((err) => {
+      if (err.name === "DocumentNotFoundError") {
+        return next(new NotFoundError("Nothing found"));
+      } else {
+        return next(err);
+      }
+    });
 };
 
 const addNewProject = (req, res, next) => {

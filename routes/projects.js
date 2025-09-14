@@ -6,7 +6,7 @@ const {
 } = require("../controllers/projects");
 const { authMiddleware } = require("../middleware/auth-middleware");
 
-router.get("/", getProjects);
+router.get("/", authMiddleware, getProjects);
 router.post("/", authMiddleware, addNewProject);
 router.delete("/", authMiddleware, deleteProject);
 

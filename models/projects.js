@@ -57,4 +57,15 @@ const projectSchema = new mongoose.Schema({
   },
 });
 
+projectSchema.statics.findOwnersProjects = function findOwnersProjects({
+  userId,
+}) {
+  return this.find({ owner: userId }).then((projects) => {
+    if (!projects) {
+      return Promise.reject(new Error("No Projects"));
+    }
+    return projects;
+  });
+};
+
 module.exports = mongoose.model("Project", projectSchema);

@@ -1,8 +1,8 @@
-# Express Node App
+# Portfolio Backend and API
 
 ## Description
 
-This is a basic Express.js application setup for a Node.js project. It serves as a starting point for building RESTful APIs or web applications using Express.
+This is meant to serve as the backend and routing of my portfolio site. It utilizes Node.js and Express, as well as Amazon Web services. The sensitive information is protected by JWT token, and other user credential checks.
 
 ## Project Structure
 
@@ -13,7 +13,6 @@ express-node-app
 │   ├── routes
 │   │   └── index.js
 │   └── controllers
-│       └── index.js
 ├── package.json
 └── README.md
 ```
@@ -23,13 +22,13 @@ express-node-app
 1. Clone the repository:
 
    ```
-   git clone <repository-url>
+   git clone https://github.com/Jensen654/Jensen-Bean_Portfolio-Project_Backend.git
    ```
 
 2. Navigate to the project directory:
 
    ```
-   cd express-node-app
+   cd Jensen-bean_Portfolio-Project_Backend
    ```
 
 3. Install the dependencies:
@@ -39,18 +38,14 @@ express-node-app
 
 ## Usage
 
-To start the application, run:
+To start the application in development mode, run:
 
 ```
-npm start
+npm run dev
 ```
 
-The application will be running on `http://localhost:3000` by default.
+The application will be running on `http://localhost:3001` by default.
 
 ## Contributing
 
 Feel free to submit issues or pull requests for any improvements or features you'd like to see.
-
-## License
-
-This project is licensed under the MIT License.

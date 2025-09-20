@@ -58,12 +58,20 @@ const projectSchema = new mongoose.Schema({
 projectSchema.statics.findOwnersProjects = function findOwnersProjects({
   ownerId,
 }) {
-  // const things = this.find({ owner: ownerId });
-  // console.log(ownerId);
-
   return this.find({ owner: ownerId }).then((projects) => {
-    console.log(projects);
+    // console.log(projects);
 
+    if (!projects) {
+      return Promise.reject(new Error("No Projects"));
+    }
+    return projects;
+  });
+};
+
+projectSchema.statics.findPublicProjects = function findPubliccProjects({
+  userName,
+}) {
+  return this.find({ owner: userName }).then((projects) => {
     if (!projects) {
       return Promise.reject(new Error("No Projects"));
     }

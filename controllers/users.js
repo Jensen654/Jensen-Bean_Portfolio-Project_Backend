@@ -54,17 +54,13 @@ const sendUploadUrl = async (req, res, next) => {
 };
 
 const sendDeleteUrl = async (req, res, next) => {
-  // console.log("item Url: ", req.params);
   const itemUrl = req.params.url;
 
   try {
     const deleteUrl = await generateDeleteUrl(itemUrl);
-    // console.log(deleteUrl);
 
     res.status(200).send({ deleteUrl });
   } catch (err) {
-    // console.log(err);
-
     next(err);
   }
 };
@@ -85,11 +81,12 @@ const login = (req, res, next) => {
 };
 
 const signUp = async (req, res, next) => {
-  const { name, avatar, email, password } = req.body;
+  const { name, userName, avatar, email, password } = req.body;
+  console.log(req.body);
 
   try {
     const hashedPassword = await bcrypt.hash(password, 4);
-    User.create({ name, avatar, email, password: hashedPassword })
+    User.create({ name, userName, avatar, email, password: hashedPassword })
       .then((user) => {
         const token = jwt.sign({ id: user._id }, JWT_SECRET, {
           expiresIn: "7d",
@@ -99,21 +96,23 @@ const signUp = async (req, res, next) => {
           name: user.name,
           avatar: user.avatar,
           email: user.email,
+          phoneNumber: user.phoneNumber,
           about: user.about,
           profession: user.profession,
           resumeUrl: user.resumeUrl,
+          showContactMe: user.showContactMe,
+          userName: user.userName,
         };
         res.status(201).send({ userData, token });
       })
       .catch((err) => {
         if (err.name === "ValidationError") {
-          next(
-            new BadRequestError(
-              `The provided info does not conform to database standards/requirements.`
-            )
-          );
+          console.log(err);
+
+          next(new BadRequestError(err.message));
         } else if (err.code === 11000) {
-          next(new ConflictError("Email has already been used."));
+          // console.log(err);
+          next(new ConflictError("Email or Username has already been used."));
         } else {
           next(err);
         }
@@ -142,11 +141,20 @@ const getCurrentUser = (req, res, next) => {
 
 const updateUserInfo = (req, res, next) => {
   const userId = req.user.id;
-  const { name, avatar, profession, resumeUrl, about } = req.body;
+  const {
+    name,
+    avatar,
+    phoneNumber,
+    showContactMe,
+    profession,
+    resumeUrl,
+    about,
+  } = req.body;
+  console.log(phoneNumber);
 
   User.findByIdAndUpdate(
     userId,
-    { name, avatar, profession, resumeUrl, about },
+    { name, avatar, phoneNumber, showContactMe, profession, resumeUrl, about },
     { new: true, runValidators: true }
   )
     .orFail()
@@ -155,13 +163,27 @@ const updateUserInfo = (req, res, next) => {
     })
     .catch((err) => {
       if (err.name === "ValidationError") {
-        next(
-          new BadRequestError(
-            `The provided info does not conform to database standards/requirements.`
-          )
-        );
+        next(new BadRequestError(err.message));
       } else if (err.name === "DocumentNotFoundError") {
         next(new NotFoundError(`User does not exist.`));
+      } else {
+        next(err);
+      }
+    });
+};
+
+const deleteUserProfile = (req, res, next) => {
+  const userId = req.user.id;
+  console.log(userId);
+
+  User.findByIdAndDelete(userId)
+    .orFail()
+    .then((deletedUser) => {
+      res.send({ deletedUser: deletedUser.name });
+    })
+    .catch((err) => {
+      if (err.name === "DocumentNotFoundError") {
+        next(new NotFoundError("No user found"));
       } else {
         next(err);
       }
@@ -175,4 +197,5 @@ module.exports = {
   sendUploadUrl,
   updateUserInfo,
   sendDeleteUrl,
+  deleteUserProfile,
 };

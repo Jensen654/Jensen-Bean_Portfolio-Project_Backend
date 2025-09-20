@@ -9,6 +9,13 @@ const userSchema = new mongoose.Schema({
     minLength: 2,
     maxLength: 100,
   },
+  userName: {
+    type: String,
+    unique: true,
+    minLength: 2,
+    maxLength: 30,
+    required: true,
+  },
   email: {
     type: String,
     required: true,
@@ -23,6 +30,15 @@ const userSchema = new mongoose.Schema({
     required: true,
     minLength: 2,
     select: false,
+  },
+  phoneNumber: {
+    type: String,
+    required: false,
+    maxLength: 30,
+  },
+  showContactMe: {
+    type: Boolean,
+    default: false,
   },
   profession: {
     type: String,
@@ -40,7 +56,6 @@ const userSchema = new mongoose.Schema({
   },
   about: {
     type: String,
-    // required: true,
     maxLength: 3000,
     default: "This user prefers to keep an air of mystery about them.",
   },
@@ -62,8 +77,6 @@ userSchema.statics.findUserByCredentials = function findUserByCredentials(
   return this.findOne({ email })
     .select("+password")
     .then((user) => {
-      // console.log(`User: ${user}`);
-
       if (!user) {
         return Promise.reject(new Error("Incorrect Email or Password"));
       }

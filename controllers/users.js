@@ -12,12 +12,13 @@ const {
   DeleteObjectCommand,
 } = require("@aws-sdk/client-s3");
 const { getSignedUrl } = require("@aws-sdk/s3-request-presigner");
+const { access } = require("../utils/devConsts.js");
 
 const s3 = new S3Client({
   region: "us-east-2",
   credentials: {
-    accessKeyId: "AKIA5TIACKHIJHDDD3PP",
-    secretAccessKey: "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",
+    accessKeyId: access.accessKey,
+    secretAccessKey: access.secretAccessKey,
   },
 });
 

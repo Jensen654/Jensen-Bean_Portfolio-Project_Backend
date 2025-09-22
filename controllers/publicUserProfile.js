@@ -37,8 +37,6 @@ async function GetPublicProjects(req, res, next) {
 
   Project.findPublicProjects({ userName: user.id })
     .then((projects) => {
-      //   console.log(projects);
-
       res.status(200).send(projects);
     })
     .catch((err) => {

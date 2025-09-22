@@ -20,7 +20,6 @@ const projectSchema = new mongoose.Schema({
   },
   url: {
     type: String,
-    // required: true,
     validate: {
       validator: (value) => {
         if (value) {
@@ -33,7 +32,6 @@ const projectSchema = new mongoose.Schema({
   },
   videoUrl: {
     type: String,
-    // required: true,
     validate: {
       validator: (value) => {
         if (value) {
@@ -46,7 +44,6 @@ const projectSchema = new mongoose.Schema({
   },
   image: {
     type: String,
-    // required: true,
   },
   owner: {
     type: mongoose.Schema.Types.ObjectId,
@@ -59,8 +56,6 @@ projectSchema.statics.findOwnersProjects = function findOwnersProjects({
   ownerId,
 }) {
   return this.find({ owner: ownerId }).then((projects) => {
-    // console.log(projects);
-
     if (!projects) {
       return Promise.reject(new Error("No Projects"));
     }

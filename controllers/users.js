@@ -1,8 +1,6 @@
 const User = require("../models/users.js");
 const jwt = require("jsonwebtoken");
-const { JWT_SECRET } = require("../utils/config.js");
 const bcrypt = require("bcrypt");
-const UnauthorizedError = require("../errors/UnauthorizedError.js");
 const NotFoundError = require("../errors/NotFoundError.js");
 const ConflictError = require("../errors/ConflictError.js");
 const BadRequestError = require("../errors/BadRequestError.js");
@@ -12,7 +10,6 @@ const {
   DeleteObjectCommand,
 } = require("@aws-sdk/client-s3");
 const { getSignedUrl } = require("@aws-sdk/s3-request-presigner");
-const { access } = require("../utils/devConsts.js");
 require("dotenv").config();
 
 const s3 = new S3Client({
@@ -71,12 +68,12 @@ const login = (req, res, next) => {
   const { email, password } = req.body;
   User.findUserByCredentials(email, password)
     .then((user) => {
-      const token = jwt.sign({ id: user._id }, JWT_SECRET, { expiresIn: "7d" });
+      const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
+        expiresIn: "7d",
+      });
       return res.send({ token, user });
     })
     .catch((err) => {
-      console.log("THis ISTH");
-
       if (err.message === "Incorrect Email or Password") {
         return next(new BadRequestError("Incorrect Email or Password"));
       }
@@ -86,13 +83,12 @@ const login = (req, res, next) => {
 
 const signUp = async (req, res, next) => {
   const { name, userName, avatar, email, password } = req.body;
-  console.log(req.body);
 
   try {
     const hashedPassword = await bcrypt.hash(password, 4);
     User.create({ name, userName, avatar, email, password: hashedPassword })
       .then((user) => {
-        const token = jwt.sign({ id: user._id }, JWT_SECRET, {
+        const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
           expiresIn: "7d",
         });
         const userData = {
@@ -111,11 +107,8 @@ const signUp = async (req, res, next) => {
       })
       .catch((err) => {
         if (err.name === "ValidationError") {
-          console.log(err);
-
           next(new BadRequestError(err.message));
         } else if (err.code === 11000) {
-          // console.log(err);
           next(new ConflictError("Email or Username has already been used."));
         } else {
           next(err);
@@ -154,7 +147,6 @@ const updateUserInfo = (req, res, next) => {
     resumeUrl,
     about,
   } = req.body;
-  console.log(phoneNumber);
 
   User.findByIdAndUpdate(
     userId,
@@ -178,7 +170,6 @@ const updateUserInfo = (req, res, next) => {
 
 const deleteUserProfile = (req, res, next) => {
   const userId = req.user.id;
-  console.log(userId);
 
   User.findByIdAndDelete(userId)
     .orFail()

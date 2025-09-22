@@ -13,12 +13,13 @@ const {
 } = require("@aws-sdk/client-s3");
 const { getSignedUrl } = require("@aws-sdk/s3-request-presigner");
 const { access } = require("../utils/devConsts.js");
+require("dotenv").config();
 
 const s3 = new S3Client({
-  region: "us-east-2",
+  region: process.env.AWS_REGION,
   credentials: {
-    accessKeyId: access.accessKey,
-    secretAccessKey: access.secretAccessKey,
+    accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
   },
 });
 
@@ -74,6 +75,8 @@ const login = (req, res, next) => {
       return res.send({ token, user });
     })
     .catch((err) => {
+      console.log("THis ISTH");
+
       if (err.message === "Incorrect Email or Password") {
         return next(new BadRequestError("Incorrect Email or Password"));
       }

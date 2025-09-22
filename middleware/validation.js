@@ -9,8 +9,8 @@ const userCreatorValidator = celebrate({
     }),
     userName: Joi.string().required().min(2).max(30).messages({
       "string.empty": 'The "userName" field must be filled in.',
-      "string.min": 'The minimum length of the "name" field must be 2',
-      "string.max": 'The maximum length of the "name" field is 30',
+      "string.min": 'The minimum length of the "userName" field must be 2',
+      "string.max": 'The maximum length of the "userName" field is 30',
     }),
     email: Joi.string().required().email().messages({
       "string.empty": `The "email" field must be filled in.`,

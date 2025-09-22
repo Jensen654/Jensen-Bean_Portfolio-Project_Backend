@@ -42,11 +42,39 @@ const deleteProject = (req, res, next) => {
     .orFail()
     .then(() =>
       res.status(200).send({ message: "Project Successfully Deleted" })
-    );
+    )
+    .catch((err) => {
+      if (err.name === "DocumentNotFoundError") {
+        return next(new NotFoundError("Nothing found"));
+      } else {
+        return next(err);
+      }
+    });
+};
+
+const updateProject = (req, res, next) => {
+  // const ownerId = req.user.id;
+  const { _id, type, title, description, url, videoUrl, image } = req.body;
+  Project.findByIdAndUpdate(
+    _id,
+    { type, title, description, url, videoUrl, image },
+    { new: true, runValidators: true }
+  )
+    .then((updatedProject) => {
+      res.send(updatedProject);
+    })
+    .catch((err) => {
+      if (err.name === "DocumentNotFoundError") {
+        return next(new NotFoundError("Nothing found"));
+      } else {
+        return next(err);
+      }
+    });
 };
 
 module.exports = {
   getProjects,
   addNewProject,
   deleteProject,
+  updateProject,
 };

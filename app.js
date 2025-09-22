@@ -3,6 +3,7 @@ const app = express();
 const MainRouter = require("./routes/index");
 const mongoose = require("mongoose");
 const errorHandler = require("./middleware/error-handler");
+const { errors } = require("celebrate");
 const cors = require("cors");
 
 mongoose
@@ -30,6 +31,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use("/", MainRouter);
 
 // Error handling
+app.use(errors());
 app.use(errorHandler);
 
 // Start the server

@@ -5,9 +5,12 @@ const mongoose = require("mongoose");
 const errorHandler = require("./middleware/error-handler");
 const { errors } = require("celebrate");
 const cors = require("cors");
+require("dotenv").config();
+const rateLimit = require("express-rate-limit");
 
+// Database connection
 mongoose
-  .connect("mongodb://127.0.0.1:27017/portfolio_db", {
+  .connect(process.env.MONGODB_URI, {
     useNewUrlParser: true,
     useUnifiedTopology: true,
   })
@@ -23,9 +26,18 @@ app.use(
   })
 );
 
+// Rate Limiting
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  limit: 100,
+  standardHeaders: "draft-8",
+  legacyHeaders: false,
+});
+
 // Middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(limiter);
 
 // Routes
 app.use("/", MainRouter);

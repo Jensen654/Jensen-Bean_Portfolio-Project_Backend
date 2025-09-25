@@ -82,11 +82,11 @@ const login = (req, res, next) => {
 };
 
 const signUp = async (req, res, next) => {
-  const { name, userName, avatar, email, password } = req.body;
+  const { name, userName, email, password } = req.body;
 
   try {
     const hashedPassword = await bcrypt.hash(password, 4);
-    User.create({ name, userName, avatar, email, password: hashedPassword })
+    User.create({ name, userName, email, password: hashedPassword })
       .then((user) => {
         const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
           expiresIn: "7d",
@@ -94,7 +94,6 @@ const signUp = async (req, res, next) => {
         const userData = {
           _id: user._id,
           name: user.name,
-          avatar: user.avatar,
           email: user.email,
           phoneNumber: user.phoneNumber,
           about: user.about,
